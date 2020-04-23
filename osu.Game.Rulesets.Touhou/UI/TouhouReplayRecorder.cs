@@ -18,6 +18,6 @@ namespace osu.Game.Rulesets.Touhou.UI
         }
 
         protected override ReplayFrame HandleFrame(Vector2 mousePosition, List<TouhouAction> actions, ReplayFrame previousFrame)
-            => new TouhouReplayFrame(Time.Current, playfield.Player.PlayerPosition().X, actions.Contains(TouhouAction.Jump), actions.Contains(TouhouAction.Shoot), previousFrame as TouhouReplayFrame);
+            => new TouhouReplayFrame(Time.Current, playfield.Player.PlayerPosition(), new[] { actions.Contains(TouhouAction.Shoot1), actions.Contains(TouhouAction.Shoot2) }, previousFrame as TouhouReplayFrame);
     }
 }

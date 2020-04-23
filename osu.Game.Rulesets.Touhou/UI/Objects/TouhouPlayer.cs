@@ -23,8 +23,6 @@ namespace osu.Game.Rulesets.Touhou.UI.Objects
         [Resolved]
         private TextureStore textures { get; set; }
 
-        private SampleChannel jump;
-        private SampleChannel doubleJump;
         private SampleChannel shoot;
 
         private readonly Bindable<PlayerModel> playerModel = new Bindable<PlayerModel>();
@@ -32,9 +30,7 @@ namespace osu.Game.Rulesets.Touhou.UI.Objects
         public override bool RemoveCompletedTransforms => false;
 
         private int horizontalDirection;
-        private int availableJumpCount = 2;
-        private float verticalSpeed;
-        private bool midAir;
+        private int verticalDirection;
 
         public readonly Container Player;
         private readonly Sprite drawablePlayer;
@@ -66,8 +62,6 @@ namespace osu.Game.Rulesets.Touhou.UI.Objects
         {
             config.BindWith(TouhouRulesetSetting.PlayerModel, playerModel);
 
-            jump = samples.Get("jump");
-            doubleJump = samples.Get("double-jump");
             shoot = samples.Get("shoot");
         }
 
@@ -114,11 +108,19 @@ namespace osu.Game.Rulesets.Touhou.UI.Objects
                     horizontalDirection++;
                     return true;
 
-                case TouhouAction.Jump:
-                    onJumpPressed();
+                case TouhouAction.MoveUp:
+                    verticalDirection--;
                     return true;
 
-                case TouhouAction.Shoot:
+                case TouhouAction.MoveDown:
+                    verticalDirection++;
+                    return true;
+
+                case TouhouAction.Shoot1:
+                    onShoot();
+                    return true;
+
+                case TouhouAction.Shoot2:
                     onShoot();
                     return true;
             }
@@ -138,11 +140,18 @@ namespace osu.Game.Rulesets.Touhou.UI.Objects
                     horizontalDirection--;
                     return;
 
-                case TouhouAction.Jump:
-                    onJumpReleased();
+                case TouhouAction.MoveUp:
+                    verticalDirection++;
                     return;
 
-                case TouhouAction.Shoot:
+                case TouhouAction.MoveDown:
+                    verticalDirection--;
+                    return;
+
+                case TouhouAction.Shoot1:
+                    return;
+
+                case TouhouAction.Shoot2:
                     return;
             }
         }
@@ -153,63 +162,29 @@ namespace osu.Game.Rulesets.Touhou.UI.Objects
 
             base.Update();
 
-            // Collided with the ground, reset jump logic
-            if (Player.Y > (TouhouPlayfield.BASE_SIZE.Y - PlayerDrawSize().Y / 2f) || Player.Y < 0)
-            {
-                availableJumpCount = 2;
-                verticalSpeed = 0;
-                midAir = false;
-                Player.Y = TouhouPlayfield.BASE_SIZE.Y - PlayerDrawSize().Y / 2f;
-            }
-
-            if (midAir)
-            {
-                verticalSpeed -= (float)Clock.ElapsedFrameTime / 3.5f;
-                Player.Y -= (float)(Clock.ElapsedFrameTime * verticalSpeed * 0.0045);
-            }
-
             if (horizontalDirection != 0)
             {
-                var position = Math.Clamp(Player.X + Math.Sign(horizontalDirection) * Clock.ElapsedFrameTime * base_speed, PlayerDrawSize().X / 2f, TouhouPlayfield.BASE_SIZE.X - PlayerDrawSize().X / 2f);
+                var positionX = Math.Clamp(Player.X + Math.Sign(horizontalDirection) * Clock.ElapsedFrameTime * base_speed, PlayerDrawSize().X / 2f, TouhouPlayfield.BASE_SIZE.X - PlayerDrawSize().X / 2f);
 
-                Player.Scale = new Vector2(Math.Abs(Scale.X) * (horizontalDirection > 0 ? 1 : -1), Player.Scale.Y);
+                // Player.Scale = new Vector2(Math.Abs(Scale.X) * (horizontalDirection > 0 ? 1 : -1), Player.Scale.Y);
 
-                if (position == Player.X)
+                if (positionX == Player.X)
                     return;
 
-                Player.X = (float)position;
+                Player.X = (float)positionX;
             }
-        }
 
-        private void onJumpPressed()
-        {
-            if (availableJumpCount == 0)
-                return;
-
-            midAir = true;
-
-            availableJumpCount--;
-
-            switch (availableJumpCount)
+            if (verticalDirection != 0)
             {
-                case 1:
-                    jump.Play();
-                    verticalSpeed = 90;
-                    break;
+                var positionY = Math.Clamp(Player.Y + Math.Sign(verticalDirection) * Clock.ElapsedFrameTime * base_speed, PlayerDrawSize().Y / 2f, TouhouPlayfield.BASE_SIZE.Y - PlayerDrawSize().Y / 2f);
 
-                case 0:
-                    doubleJump.Play();
-                    verticalSpeed = 80;
-                    break;
+                // Player.Scale = new Vector2(Player.Scale.X, Math.Abs(Scale.Y) * (verticalDirection > 0 ? 1 : -1));
+
+                if (positionY == Player.Y)
+                    return;
+
+                Player.Y = (float)positionY;
             }
-        }
-
-        private void onJumpReleased()
-        {
-            if (verticalSpeed < 0)
-                return;
-
-            verticalSpeed /= 2;
         }
 
         private void onShoot()
@@ -227,7 +202,8 @@ namespace osu.Game.Rulesets.Touhou.UI.Objects
 
             if (state != null)
             {
-                Player.X = state.Position.Value;
+                Player.X = state.Position.Value.X;
+                Player.Y = state.Position.Value.Y;
             }
         }
     }

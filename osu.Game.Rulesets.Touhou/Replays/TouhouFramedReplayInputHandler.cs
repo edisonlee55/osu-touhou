@@ -3,6 +3,7 @@ using osu.Framework.Utils;
 using osu.Game.Replays;
 using osu.Game.Rulesets.Replays;
 using System.Collections.Generic;
+using osuTK;
 
 namespace osu.Game.Rulesets.Touhou.Replays
 {
@@ -15,7 +16,7 @@ namespace osu.Game.Rulesets.Touhou.Replays
 
         protected override bool IsImportant(TouhouReplayFrame frame) => true;
 
-        protected float? Position
+        protected Vector2? Position
         {
             get
             {
@@ -44,7 +45,7 @@ namespace osu.Game.Rulesets.Touhou.Replays
 
         public class TouhouReplayState : ReplayState<TouhouAction>
         {
-            public float? Position { get; set; }
+            public Vector2? Position { get; set; }
         }
     }
 }

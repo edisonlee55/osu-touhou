@@ -45,8 +45,12 @@ namespace osu.Game.Rulesets.Touhou
         {
             new KeyBinding(InputKey.Left, TouhouAction.MoveLeft),
             new KeyBinding(InputKey.Right, TouhouAction.MoveRight),
-            new KeyBinding(InputKey.Shift, TouhouAction.Jump),
-            new KeyBinding(InputKey.Z, TouhouAction.Shoot),
+            new KeyBinding(InputKey.Up, TouhouAction.MoveUp),
+            new KeyBinding(InputKey.Down, TouhouAction.MoveDown),
+            new KeyBinding(InputKey.Z, TouhouAction.Shoot1),
+            new KeyBinding(InputKey.MouseLeft, TouhouAction.Shoot1),
+            new KeyBinding(InputKey.X, TouhouAction.Shoot2),
+            new KeyBinding(InputKey.MouseRight, TouhouAction.Shoot2)
         };
 
         public override IEnumerable<Mod> ConvertFromLegacyMods(LegacyMods mods)
@@ -124,7 +128,7 @@ namespace osu.Game.Rulesets.Touhou
 
         public override string Description => "osu!touhou";
 
-        public override string ShortName => "osu!touhou";
+        public override string ShortName => "touhou";
 
         public override string PlayingVerb => "Avoiding apples";
 

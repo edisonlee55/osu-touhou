@@ -23,10 +23,16 @@ namespace osu.Game.Rulesets.Touhou
         [Description("Move Right")]
         MoveRight,
 
-        [Description("Jump")]
-        Jump,
+        [Description("Move Up")]
+        MoveUp,
 
-        [Description("Shoot")]
-        Shoot
+        [Description("Move Down")]
+        MoveDown,
+
+        [Description("Shoot 1")]
+        Shoot1,
+
+        [Description("Shoot 2")]
+        Shoot2
     }
 }
