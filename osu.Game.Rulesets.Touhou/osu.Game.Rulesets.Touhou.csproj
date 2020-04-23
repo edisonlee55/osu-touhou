@@ -4,6 +4,7 @@
     <AssemblyTitle>osu.Game.Rulesets.Sample</AssemblyTitle>
     <OutputType>Library</OutputType>
     <PlatformTarget>AnyCPU</PlatformTarget>
+    <RootNamespace>osu.Game.Rulesets.Touhou</RootNamespace>
     <LangVersion>8</LangVersion>
   </PropertyGroup>
   <ItemGroup>
