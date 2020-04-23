@@ -38,6 +38,8 @@ namespace osu.Game.Rulesets.Touhou.Mods
                 {
                     case TouhouAction.MoveLeft:
                     case TouhouAction.MoveRight:
+                    case TouhouAction.MoveUp:
+                    case TouhouAction.MoveDown:
                         return true;
                 }
 
@@ -50,6 +52,8 @@ namespace osu.Game.Rulesets.Touhou.Mods
                 {
                     case TouhouAction.MoveLeft:
                     case TouhouAction.MoveRight:
+                    case TouhouAction.MoveUp:
+                    case TouhouAction.MoveDown:
                         return;
                 }
             }
@@ -57,6 +61,7 @@ namespace osu.Game.Rulesets.Touhou.Mods
             protected override bool OnMouseMove(MouseMoveEvent e)
             {
                 player.X = e.MousePosition.X / DrawSize.X * TouhouPlayfield.BASE_SIZE.X;
+                player.Y = e.MousePosition.Y / DrawSize.Y * TouhouPlayfield.BASE_SIZE.Y;
                 return base.OnMouseMove(e);
             }
         }
