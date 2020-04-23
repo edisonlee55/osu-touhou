@@ -1,16 +1,7 @@
-# bosu
-A custom game mode for osu!lazer project based on "I wanna be the Boshy" game.
+# osu!touhou
+A custom game mode for osu!lazer project based on Touhou Project.
+
+Fork from [bosu](https://github.com/EVAST9919/bosu) by [EVAST9919](https://github.com/EVAST9919) under the MIT License.
 
 Install guide:
 https://www.youtube.com/watch?v=LF6hKh6FBtU
-
-Support:
-https://www.patreon.com/evast
-
-Follow me:
-
-https://discord.gg/YqXk9ZZ
-
-https://twitter.com/ev4st
-
-https://youtube.com/c/evast_osu
