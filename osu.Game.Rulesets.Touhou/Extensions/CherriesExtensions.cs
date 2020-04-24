@@ -14,7 +14,8 @@ namespace osu.Game.Rulesets.Touhou.Extensions
 {
     public static class CherriesExtensions
     {
-        private const int bullets_per_hitcircle = 4;
+        private const int bullets_per_hitcircle = 10;
+        private const int hitcircle_angle_offset = 5;
 
         private const int bullets_per_slider_reverse = 5;
 
@@ -25,32 +26,35 @@ namespace osu.Game.Rulesets.Touhou.Extensions
         private const float spinner_span_delay = 250f;
         private const float spinner_angle_per_span = 8f;
 
-        public static List<TouhouHitObject> ConvertSlider(HitObject obj, IBeatmap beatmap, IHasCurve curve, int index)
+        public static List<TouhouHitObject> ConvertSlider(HitObject obj, IBeatmap beatmap, IHasCurve curve, bool isKiai, int index)
         {
             double spanDuration = curve.Duration / (curve.RepeatCount + 1);
             bool isRepeatSpam = spanDuration < 75 && curve.RepeatCount > 0;
 
             if (isRepeatSpam)
-                return generateRepeatSpamSlider(obj, beatmap, curve, spanDuration, index);
+                return generateRepeatSpamSlider(obj, beatmap, curve, spanDuration, isKiai, index);
             else
-                return generateDefaultSlider(obj, beatmap, curve, spanDuration, index);
+                return generateDefaultSlider(obj, beatmap, curve, spanDuration, isKiai, index);
         }
 
-        public static List<TouhouHitObject> ConvertHitCircle(HitObject obj, int index)
+        public static List<TouhouHitObject> ConvertHitCircle(HitObject obj, bool isKiai, int index, int indexInCurrentCombo)
         {
             List<TouhouHitObject> hitObjects = new List<TouhouHitObject>();
 
-            var objPosition = (obj as IHasPosition)?.Position ?? Vector2.Zero;
+            var circlePosition = (obj as IHasPosition)?.Position ?? Vector2.Zero;
+            circlePosition *= new Vector2(1, 0.5f);
             var comboData = obj as IHasCombo;
+
+            // TODO: new another type for new combo hitcircle
 
             hitObjects.AddRange(generateExplosion(
                 obj.StartTime,
                 bullets_per_hitcircle,
-                objPosition * new Vector2(1, 0.5f),
+                circlePosition,
                 comboData,
+                isKiai,
                 index,
-                0,
-                120));
+                hitcircle_angle_offset * indexInCurrentCombo));
 
             hitObjects.Add(new SoundHitObject
             {
@@ -61,7 +65,7 @@ namespace osu.Game.Rulesets.Touhou.Extensions
             return hitObjects;
         }
 
-        public static List<TouhouHitObject> ConvertSpinner(HitObject obj, IHasEndTime endTime, int index, int stageIndex)
+        public static List<TouhouHitObject> ConvertSpinner(HitObject obj, IHasEndTime endTime, bool isKiai, int index, int stageIndex)
         {
             List<TouhouHitObject> hitObjects = new List<TouhouHitObject>();
 
@@ -77,6 +81,7 @@ namespace osu.Game.Rulesets.Touhou.Extensions
                     bullets_per_spinner_span,
                     objPosition * new Vector2(1, 0.5f),
                     comboData,
+                    isKiai,
                     index,
                     i * spinner_angle_per_span));
             }
@@ -84,7 +89,7 @@ namespace osu.Game.Rulesets.Touhou.Extensions
             return hitObjects;
         }
 
-        private static IEnumerable<AngledCherry> generateExplosion(double startTime, int bulletCount, Vector2 position, IHasCombo comboData, int index, float angleOffset = 0, float angleRange = 360f)
+        private static IEnumerable<AngledCherry> generateExplosion(double startTime, int bulletCount, Vector2 position, IHasCombo comboData, bool isKiai, int index, float angleOffset = 0, float angleRange = 360f)
         {
             for (int i = 0; i < bulletCount; i++)
             {
@@ -95,12 +100,13 @@ namespace osu.Game.Rulesets.Touhou.Extensions
                     Position = position,
                     NewCombo = comboData?.NewCombo ?? false,
                     ComboOffset = comboData?.ComboOffset ?? 0,
-                    IndexInBeatmap = index
+                    IndexInBeatmap = index,
+                    IsKiai = isKiai
                 };
             }
         }
 
-        private static IEnumerable<AngledCherry> generateTriangularExplosion(double startTime, int bulletCount, Vector2 position, IHasCombo comboData, int index, float angleOffset = 0)
+        private static IEnumerable<AngledCherry> generateTriangularExplosion(double startTime, int bulletCount, Vector2 position, IHasCombo comboData, bool isKiai, int index, float angleOffset = 0)
         {
             for (int i = 0; i < bulletCount; i++)
             {
@@ -114,12 +120,13 @@ namespace osu.Game.Rulesets.Touhou.Extensions
                     Position = position,
                     NewCombo = comboData?.NewCombo ?? false,
                     ComboOffset = comboData?.ComboOffset ?? 0,
-                    IndexInBeatmap = index
+                    IndexInBeatmap = index,
+                    IsKiai = isKiai,
                 };
             }
         }
 
-        private static IEnumerable<EndTimeCherry> generateEndTimeExplosion(double startTime, double endTime, int bulletCount, Vector2 position, IHasCombo comboData, int index, float angleOffset = 0, float angleRange = 360f)
+        private static IEnumerable<EndTimeCherry> generateEndTimeExplosion(double startTime, double endTime, int bulletCount, Vector2 position, IHasCombo comboData, bool isKiai, int index, float angleOffset = 0, float angleRange = 360f)
         {
             for (int i = 0; i < bulletCount; i++)
             {
@@ -131,12 +138,13 @@ namespace osu.Game.Rulesets.Touhou.Extensions
                     Position = position,
                     NewCombo = comboData?.NewCombo ?? false,
                     ComboOffset = comboData?.ComboOffset ?? 0,
-                    IndexInBeatmap = index
+                    IndexInBeatmap = index,
+                    IsKiai = isKiai
                 };
             }
         }
 
-        private static List<TouhouHitObject> generateDefaultSlider(HitObject obj, IBeatmap beatmap, IHasCurve curve, double spanDuration, int index)
+        private static List<TouhouHitObject> generateDefaultSlider(HitObject obj, IBeatmap beatmap, IHasCurve curve, double spanDuration, bool isKiai, int index)
         {
             List<TouhouHitObject> hitObjects = new List<TouhouHitObject>();
 
@@ -182,7 +190,8 @@ namespace osu.Game.Rulesets.Touhou.Extensions
                                 Position = sliderEventPosition,
                                 NewCombo = comboData?.NewCombo ?? false,
                                 ComboOffset = comboData?.ComboOffset ?? 0,
-                                IndexInBeatmap = index
+                                IndexInBeatmap = index,
+                                IsKiai = isKiai
                             });
                         }
 
@@ -202,6 +211,7 @@ namespace osu.Game.Rulesets.Touhou.Extensions
                                 20,
                                 sliderEventPosition,
                                 comboData,
+                                isKiai,
                                 index,
                                 MathExtensions.GetRandomTimedAngleOffset(e.Time)));
                         }
@@ -222,6 +232,7 @@ namespace osu.Game.Rulesets.Touhou.Extensions
                                 Math.Clamp((int)curve.Distance / 15, 5, 20),
                                 sliderEventPosition,
                                 comboData,
+                                isKiai,
                                 index));
                         }
 
@@ -234,12 +245,12 @@ namespace osu.Game.Rulesets.Touhou.Extensions
                 }
             }
 
-            hitObjects.AddRange(generateSliderBody(obj, curve, index));
+            hitObjects.AddRange(generateSliderBody(obj, curve, isKiai, index));
 
             return hitObjects;
         }
 
-        private static List<TouhouHitObject> generateRepeatSpamSlider(HitObject obj, IBeatmap beatmap, IHasCurve curve, double spanDuration, int index)
+        private static List<TouhouHitObject> generateRepeatSpamSlider(HitObject obj, IBeatmap beatmap, IHasCurve curve, double spanDuration, bool isKiai, int index)
         {
             List<TouhouHitObject> hitObjects = new List<TouhouHitObject>();
 
@@ -273,6 +284,7 @@ namespace osu.Game.Rulesets.Touhou.Extensions
                                 bullets_per_slider_reverse,
                                 sliderEventPosition,
                                 comboData,
+                                isKiai,
                                 index));
                         }
 
@@ -293,6 +305,7 @@ namespace osu.Game.Rulesets.Touhou.Extensions
                                 bullets_per_slider_reverse,
                                 sliderEventPosition,
                                 comboData,
+                                isKiai,
                                 index,
                                 slider_angle_per_span * (e.SpanIndex + 1)));
                         }
@@ -313,6 +326,7 @@ namespace osu.Game.Rulesets.Touhou.Extensions
                                 bullets_per_slider_reverse,
                                 sliderEventPosition,
                                 comboData,
+                                isKiai,
                                 index,
                                 slider_angle_per_span * (curve.RepeatCount + 1)));
                         }
@@ -326,12 +340,12 @@ namespace osu.Game.Rulesets.Touhou.Extensions
                 }
             }
 
-            hitObjects.AddRange(generateSliderBody(obj, curve, index));
+            hitObjects.AddRange(generateSliderBody(obj, curve, isKiai, index));
 
             return hitObjects;
         }
 
-        private static List<SliderPartCherry> generateSliderBody(HitObject obj, IHasCurve curve, int index)
+        private static List<SliderPartCherry> generateSliderBody(HitObject obj, IHasCurve curve, bool isKiai, int index)
         {
             var objPosition = (obj as IHasPosition)?.Position ?? Vector2.Zero;
             var comboData = obj as IHasCombo;
@@ -355,7 +369,8 @@ namespace osu.Game.Rulesets.Touhou.Extensions
                         Position = position,
                         NewCombo = comboData?.NewCombo ?? false,
                         ComboOffset = comboData?.ComboOffset ?? 0,
-                        IndexInBeatmap = index
+                        IndexInBeatmap = index,
+                        IsKiai = isKiai,
                     });
                 }
             }
