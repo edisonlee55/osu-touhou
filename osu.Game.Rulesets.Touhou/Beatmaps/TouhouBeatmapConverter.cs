@@ -19,31 +19,39 @@ namespace osu.Game.Rulesets.Touhou.Beatmaps
         public override bool CanConvert() => Beatmap.HitObjects.All(h => h is IHasPosition);
 
         private int index = -1;
+        private int objectIndexInCurrentCombo = 0;
 
         protected override IEnumerable<TouhouHitObject> ConvertHitObject(HitObject obj, IBeatmap beatmap)
         {
             var comboData = obj as IHasCombo;
             if (comboData?.NewCombo ?? false)
+            {
+                objectIndexInCurrentCombo = 0;
                 index++;
+            }
 
             var beatmapStageIndex = getBeatmapStageIndex(beatmap, obj.StartTime);
+
+            bool kiai = beatmap.ControlPointInfo.EffectPointAt(obj.StartTime).KiaiMode;
 
             List<TouhouHitObject> hitObjects = new List<TouhouHitObject>();
 
             switch (obj)
             {
                 case IHasCurve curve:
-                    hitObjects.AddRange(CherriesExtensions.ConvertSlider(obj, beatmap, curve, index));
+                    hitObjects.AddRange(CherriesExtensions.ConvertSlider(obj, beatmap, curve, kiai, index));
                     break;
 
                 case IHasEndTime endTime:
-                    hitObjects.AddRange(CherriesExtensions.ConvertSpinner(obj, endTime, index, beatmapStageIndex));
+                    hitObjects.AddRange(CherriesExtensions.ConvertSpinner(obj, endTime, kiai, index, beatmapStageIndex));
                     break;
 
                 default:
-                    hitObjects.AddRange(CherriesExtensions.ConvertHitCircle(obj, index));
+                    hitObjects.AddRange(CherriesExtensions.ConvertHitCircle(obj, kiai, index, objectIndexInCurrentCombo));
                     break;
             }
+
+            objectIndexInCurrentCombo++;
 
             return hitObjects;
         }
